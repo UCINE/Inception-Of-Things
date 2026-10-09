@@ -1,0 +1,14 @@
+Vagrant.configure("2") do |config|
+
+  
+  config.vm.define "bmakhlouS" do |bmakhlouS|
+    bmakhlouS.vm.box = "generic/alpine319"
+    bmakhlouS.vm.network "private_network", ip: "192.168.56.110"
+    bmakhlouS.vm.hostname = "bmakhlouS"
+    bmakhlouS.vm.provider "virtualbox" do |vb|
+    end
+    bmakhlouS.vm.provision "shell", path: "./scripts/setup.sh"
+  end
+
+  config.vm.synced_folder "./confs", "/vagrant"
+end

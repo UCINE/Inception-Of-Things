@@ -1,0 +1,323 @@
++ line 3: set -euo pipefail
++ line 5: CLUSTER_NAME=iot
++ line 6: CLUSTER_CONTEXT=k3d-iot
++ line 7: CLUSTER_API_PORT=6550
++ line 8: RESET_CLUSTER=0
++ line 9: ARGOCD_VERSION=v3.4.4
++ line 10: ARGOCD_IMAGE=quay.io/argoproj/argocd:v3.4.4
++ line 11: ARGOCD_MANIFEST_URL=https://raw.githubusercontent.com/argoproj/argo-cd/v3.4.4/manifests/install.yaml
++ line 13: [[ 1000 -eq 0 ]]
++ line 108: echo '==> Base packages'
+==> Base packages
++ line 109: sudo apt-get update -y
+Hit:1 https://dl.google.com/linux/chrome-stable/deb stable InRelease
+Hit:2 https://download.docker.com/linux/debian bullseye InRelease
+Hit:3 http://http.kali.org/kali kali-rolling InRelease
+Hit:4 https://packages.microsoft.com/repos/code stable InRelease
+Reading package lists...
++ line 110: sudo apt-get install -y curl ca-certificates git
+Reading package lists...
+Building dependency tree...
+Reading state information...
+curl is already the newest version (8.20.0-5).
+ca-certificates is already the newest version (20260601).
+git is already the newest version (1:2.53.0-1).
+Solving dependencies...
+0 upgraded, 0 newly installed, 0 to remove and 635 not upgraded.
++ line 112: echo '==> Docker'
+==> Docker
++ line 113: command -v docker
++ line 116: sudo usermod -aG docker kali
++ line 118: command -v systemctl
++ line 118: systemctl is-system-running
++ line 119: sudo systemctl enable --now docker
++ line 124: docker info
++ line 131: echo '==> kubectl'
+==> kubectl
++ line 132: command -v kubectl
++ line 138: echo '==> k3d'
+==> k3d
++ line 139: command -v k3d
++ line 140: curl -fsSL https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh
++ line 140: sudo env PATH=/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin bash
+Verifying SHA256 checksum of /tmp/k3d-binary-68H8K6/k3d-linux-amd64...
+Checksum verified OK (06d8f25bc3a971c4eb29e0ff08429b180402db0f4dec838c9eac427e296800a0)
+Preparing to install k3d into /usr/local/bin
+k3d installed into /usr/local/bin/k3d
+Run 'k3d --help' to see what you can do with it.
++ line 143: echo '==> Cluster'
+==> Cluster
++ line 144: k3d cluster list
++ line 144: grep -qw iot
++ line 145: create_cluster
++ line 72: k3d cluster create iot --api-port 127.0.0.1:6550 --wait
+[36mINFO[0m[0000] Prep: Network                                
+[36mINFO[0m[0000] Created network 'k3d-iot'                    
+[36mINFO[0m[0000] Created image volume k3d-iot-images          
+[36mINFO[0m[0000] Starting new tools node...                   
+[36mINFO[0m[0001] Creating node 'k3d-iot-server-0'             
+[36mINFO[0m[0001] Pulling image 'ghcr.io/k3d-io/k3d-tools:5.9.0' 
+[36mINFO[0m[0002] Pulling image 'docker.io/rancher/k3s:v1.35.5-k3s1' 
+[36mINFO[0m[0004] Starting node 'k3d-iot-tools'                
+[36mINFO[0m[0008] Creating LoadBalancer 'k3d-iot-serverlb'     
+[36mINFO[0m[0009] Pulling image 'ghcr.io/k3d-io/k3d-proxy:5.9.0' 
+[36mINFO[0m[0014] Using the k3d-tools node to gather environment information 
+[36mINFO[0m[0015] HostIP: using network gateway 172.18.0.1 address 
+[36mINFO[0m[0015] Starting cluster 'iot'                       
+[36mINFO[0m[0015] Starting servers...                          
+[36mINFO[0m[0015] Starting node 'k3d-iot-server-0'             
+[36mINFO[0m[0020] All agents already running.                  
+[36mINFO[0m[0020] Starting helpers...                          
+[36mINFO[0m[0020] Starting node 'k3d-iot-serverlb'             
+[36mINFO[0m[0026] Injecting records for hostAliases (incl. host.k3d.internal) and for 2 network members into CoreDNS configmap... 
+[36mINFO[0m[0028] Cluster 'iot' created successfully!          
+[36mINFO[0m[0028] You can now use it like this:                
+kubectl cluster-info
++ line 150: use_cluster
++ line 85: k3d kubeconfig merge iot --kubeconfig-switch-context
++ line 86: fix_kubeconfig_server
++ line 76: local server
+++ line 78: kubectl config view -o 'jsonpath={.clusters[?(@.name=="k3d-iot")].cluster.server}'
++ line 78: server=https://127.0.0.1:6550
++ line 79: [[ https://127.0.0.1:6550 == https://0.0.0.0:* ]]
++ line 88: kubectl cluster-info
++ line 89: return
++ line 151: kubectl cluster-info
+Kubernetes control plane is running at https://127.0.0.1:6550
+CoreDNS is running at https://127.0.0.1:6550/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+Metrics-server is running at https://127.0.0.1:6550/api/v1/namespaces/kube-system/services/https:metrics-server:https/proxy
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
++ line 152: preload_coredns_image
++ line 44: local image
++ line 45: local runtime_image
++ line 46: local first_part
++ line 48: echo '==> Preloading CoreDNS image'
+==> Preloading CoreDNS image
+++ line 49: kubectl -n kube-system get deployment coredns -o 'jsonpath={.spec.template.spec.containers[0].image}'
++ line 49: image=rancher/mirrored-coredns-coredns:1.14.3
++ line 50: runtime_image=rancher/mirrored-coredns-coredns:1.14.3
++ line 51: first_part=rancher
++ line 53: [[ rancher != *.* ]]
++ line 53: [[ rancher != *:* ]]
++ line 53: [[ rancher != localhost ]]
++ line 54: runtime_image=docker.io/rancher/mirrored-coredns-coredns:1.14.3
++ line 57: docker image inspect rancher/mirrored-coredns-coredns:1.14.3
++ line 57: docker pull rancher/mirrored-coredns-coredns:1.14.3
+1.14.3: Pulling from rancher/mirrored-coredns-coredns
+0fbc275577b7: Pulling fs layer
+03c9b64681ee: Pulling fs layer
+0783a66ae749: Pulling fs layer
+2e4cf50eeb92: Pulling fs layer
+6cdd517ba905: Pulling fs layer
+6b72b81ed966: Pulling fs layer
+efae86a3fb38: Pulling fs layer
+d557676654e5: Pulling fs layer
+68e4cd60e60f: Pulling fs layer
+56ce5a7a0a8c: Pulling fs layer
+0f8b424aa0b9: Pulling fs layer
+d82bc7a76a83: Pulling fs layer
+e1089d61b200: Pulling fs layer
+6cdd517ba905: Download complete
+03c9b64681ee: Download complete
+68e4cd60e60f: Download complete
+0783a66ae749: Download complete
+2e4cf50eeb92: Download complete
+d557676654e5: Download complete
+efae86a3fb38: Download complete
+56ce5a7a0a8c: Download complete
+e1089d61b200: Download complete
+0fbc275577b7: Download complete
+0f8b424aa0b9: Download complete
+6b72b81ed966: Download complete
+d82bc7a76a83: Download complete
+03c9b64681ee: Pull complete
+2e4cf50eeb92: Pull complete
+56ce5a7a0a8c: Pull complete
+68e4cd60e60f: Pull complete
+0783a66ae749: Pull complete
+d557676654e5: Pull complete
+e1089d61b200: Pull complete
+0f8b424aa0b9: Pull complete
+d82bc7a76a83: Pull complete
+6cdd517ba905: Pull complete
+efae86a3fb38: Pull complete
+6b72b81ed966: Pull complete
+0fbc275577b7: Pull complete
+Digest: sha256:b21d26b915e10acb5bc78715c1e8b6047ab2675389b2bcc18b3a6499d90e74c0
+Status: Downloaded newer image for rancher/mirrored-coredns-coredns:1.14.3
+docker.io/rancher/mirrored-coredns-coredns:1.14.3
++ line 58: k3d image import rancher/mirrored-coredns-coredns:1.14.3 -c iot
+[36mINFO[0m[0000] Importing image(s) into cluster 'iot'        
+[36mINFO[0m[0000] Starting new tools node...                   
+[36mINFO[0m[0000] Starting node 'k3d-iot-tools'                
+[36mINFO[0m[0000] Saving 1 image(s) from runtime...            
+[36mINFO[0m[0001] Importing images into nodes...               
+[36mINFO[0m[0001] Importing images from tarball '/k3d/images/k3d-iot-images-20260710182513.tar' into node 'k3d-iot-server-0'... 
+[31mERRO[0m[0003] failed to import images in node 'k3d-iot-server-0': Exec process in node 'k3d-iot-server-0' failed with exit code '1': Logs from failed access process:
+ctr: content digest sha256:66998134fe3ea31314108e786b41936bc43acb35c5d848934f22bd4d80f2f3e9: not found 
+[36mINFO[0m[0003] Removing the tarball(s) from image volume... 
+[36mINFO[0m[0004] Removing k3d-tools node...                   
+[36mINFO[0m[0004] Successfully imported image(s)               
+[36mINFO[0m[0004] Successfully imported 1 image(s) into 1 cluster(s) 
++ line 59: kubectl -n kube-system set image deployment/coredns coredns=docker.io/rancher/mirrored-coredns-coredns:1.14.3
++ line 60: kubectl -n kube-system patch deployment coredns --type=json '-p=[{"op":"replace","path":"/spec/template/spec/containers/0/imagePullPolicy","value":"IfNotPresent"}]'
++ line 62: kubectl -n kube-system rollout status deployment/coredns --timeout=300s
+Waiting for deployment "coredns" rollout to finish: 0 of 1 updated replicas are available...
+Waiting for deployment "coredns" rollout to finish: 0 of 1 updated replicas are available...
+deployment "coredns" successfully rolled out
++ line 153: preload_argocd_image
++ line 66: echo '==> Preloading Argo CD image'
+==> Preloading Argo CD image
++ line 67: docker pull quay.io/argoproj/argocd:v3.4.4
+v3.4.4: Pulling from argoproj/argocd
+16c195d4c5e9: Pulling fs layer
+11c937873368: Pulling fs layer
+275b7b9557d2: Pulling fs layer
+f926d8f7d091: Pulling fs layer
+203436b84003: Pulling fs layer
+66eee3976da0: Pulling fs layer
+3ed41a4be2e6: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+e94122f427d7: Pulling fs layer
+df5023668565: Pulling fs layer
+4b8df88c8e8d: Pulling fs layer
+27eee586c42a: Pulling fs layer
+678770ceec8a: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+4f4fb700ef54: Download complete
+66eee3976da0: Download complete
+e94122f427d7: Download complete
+4b8df88c8e8d: Download complete
+275b7b9557d2: Download complete
+f926d8f7d091: Download complete
+3ed41a4be2e6: Download complete
+11c937873368: Download complete
+27eee586c42a: Download complete
+203436b84003: Download complete
+16c195d4c5e9: Download complete
+df5023668565: Download complete
+16c195d4c5e9: Pull complete
+678770ceec8a: Download complete
+df5023668565: Pull complete
+4b8df88c8e8d: Pull complete
+11c937873368: Pull complete
+27eee586c42a: Pull complete
+203436b84003: Pull complete
+66eee3976da0: Pull complete
+275b7b9557d2: Pull complete
+3ed41a4be2e6: Pull complete
+4f4fb700ef54: Pull complete
+e94122f427d7: Pull complete
+678770ceec8a: Pull complete
+f926d8f7d091: Pull complete
+Digest: sha256:2fb3efa9eaa42382acb39c9a1485eaac7a1ad7a09e8aa7da7143ca256fa6da09
+Status: Downloaded newer image for quay.io/argoproj/argocd:v3.4.4
+quay.io/argoproj/argocd:v3.4.4
++ line 68: k3d image import quay.io/argoproj/argocd:v3.4.4 -c iot
+[36mINFO[0m[0000] Importing image(s) into cluster 'iot'        
+[36mINFO[0m[0000] Starting new tools node...                   
+[36mINFO[0m[0001] Starting node 'k3d-iot-tools'                
+[36mINFO[0m[0002] Saving 1 image(s) from runtime...            
+[36mINFO[0m[0005] Importing images into nodes...               
+[36mINFO[0m[0005] Importing images from tarball '/k3d/images/k3d-iot-images-20260710182536.tar' into node 'k3d-iot-server-0'... 
+[31mERRO[0m[0010] failed to import images in node 'k3d-iot-server-0': Exec process in node 'k3d-iot-server-0' failed with exit code '1': Logs from failed access process:
+ctr: content digest sha256:22930b639b9b06e002304c56aa2bbba444b012e2a01529494dc4e8cc81eb6931: not found 
+[36mINFO[0m[0010] Removing the tarball(s) from image volume... 
+[36mINFO[0m[0011] Removing k3d-tools node...                   
+[36mINFO[0m[0011] Successfully imported image(s)               
+[36mINFO[0m[0011] Successfully imported 1 image(s) into 1 cluster(s) 
++ line 155: echo '==> Namespaces'
+==> Namespaces
++ line 156: ensure_namespace argocd
++ line 20: local namespace=argocd
++ line 21: kubectl create namespace argocd --dry-run=client -o yaml
++ line 21: kubectl apply -f -
+namespace/argocd created
++ line 157: ensure_namespace dev
++ line 20: local namespace=dev
++ line 21: kubectl create namespace dev --dry-run=client -o yaml
++ line 21: kubectl apply -f -
+namespace/dev created
++ line 158: ensure_namespace gitlab
++ line 20: local namespace=gitlab
++ line 21: kubectl create namespace gitlab --dry-run=client -o yaml
++ line 21: kubectl apply -f -
+namespace/gitlab created
++ line 160: echo '==> Argo CD'
+==> Argo CD
++ line 161: kubectl apply --server-side --force-conflicts -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/v3.4.4/manifests/install.yaml
+customresourcedefinition.apiextensions.k8s.io/applications.argoproj.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/applicationsets.argoproj.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/appprojects.argoproj.io serverside-applied
+serviceaccount/argocd-application-controller serverside-applied
+serviceaccount/argocd-applicationset-controller serverside-applied
+serviceaccount/argocd-dex-server serverside-applied
+serviceaccount/argocd-notifications-controller serverside-applied
+serviceaccount/argocd-redis serverside-applied
+serviceaccount/argocd-repo-server serverside-applied
+serviceaccount/argocd-server serverside-applied
+role.rbac.authorization.k8s.io/argocd-application-controller serverside-applied
+role.rbac.authorization.k8s.io/argocd-applicationset-controller serverside-applied
+role.rbac.authorization.k8s.io/argocd-dex-server serverside-applied
+role.rbac.authorization.k8s.io/argocd-notifications-controller serverside-applied
+role.rbac.authorization.k8s.io/argocd-redis serverside-applied
+role.rbac.authorization.k8s.io/argocd-server serverside-applied
+clusterrole.rbac.authorization.k8s.io/argocd-application-controller serverside-applied
+clusterrole.rbac.authorization.k8s.io/argocd-applicationset-controller serverside-applied
+clusterrole.rbac.authorization.k8s.io/argocd-server serverside-applied
+rolebinding.rbac.authorization.k8s.io/argocd-application-controller serverside-applied
+rolebinding.rbac.authorization.k8s.io/argocd-applicationset-controller serverside-applied
+rolebinding.rbac.authorization.k8s.io/argocd-dex-server serverside-applied
+rolebinding.rbac.authorization.k8s.io/argocd-notifications-controller serverside-applied
+rolebinding.rbac.authorization.k8s.io/argocd-redis serverside-applied
+rolebinding.rbac.authorization.k8s.io/argocd-server serverside-applied
+clusterrolebinding.rbac.authorization.k8s.io/argocd-application-controller serverside-applied
+clusterrolebinding.rbac.authorization.k8s.io/argocd-applicationset-controller serverside-applied
+clusterrolebinding.rbac.authorization.k8s.io/argocd-server serverside-applied
+configmap/argocd-cm serverside-applied
+configmap/argocd-cmd-params-cm serverside-applied
+configmap/argocd-gpg-keys-cm serverside-applied
+configmap/argocd-notifications-cm serverside-applied
+configmap/argocd-rbac-cm serverside-applied
+configmap/argocd-ssh-known-hosts-cm serverside-applied
+configmap/argocd-tls-certs-cm serverside-applied
+secret/argocd-notifications-secret serverside-applied
+secret/argocd-secret serverside-applied
+service/argocd-applicationset-controller serverside-applied
+service/argocd-dex-server serverside-applied
+service/argocd-metrics serverside-applied
+service/argocd-notifications-controller-metrics serverside-applied
+service/argocd-redis serverside-applied
+service/argocd-repo-server serverside-applied
+service/argocd-server serverside-applied
+service/argocd-server-metrics serverside-applied
+deployment.apps/argocd-applicationset-controller serverside-applied
+deployment.apps/argocd-dex-server serverside-applied
+deployment.apps/argocd-notifications-controller serverside-applied
+deployment.apps/argocd-redis serverside-applied
+deployment.apps/argocd-repo-server serverside-applied
+deployment.apps/argocd-server serverside-applied
+statefulset.apps/argocd-application-controller serverside-applied
+networkpolicy.networking.k8s.io/argocd-application-controller-network-policy serverside-applied
+networkpolicy.networking.k8s.io/argocd-applicationset-controller-network-policy serverside-applied
+networkpolicy.networking.k8s.io/argocd-dex-server-network-policy serverside-applied
+networkpolicy.networking.k8s.io/argocd-notifications-controller-network-policy serverside-applied
+networkpolicy.networking.k8s.io/argocd-redis-network-policy serverside-applied
+networkpolicy.networking.k8s.io/argocd-repo-server-network-policy serverside-applied
+networkpolicy.networking.k8s.io/argocd-server-network-policy serverside-applied
++ line 162: kubectl delete pods -n argocd --all --ignore-not-found
++ line 163: wait_for_argocd
++ line 25: kubectl wait --for=condition=available --timeout=1800s deployment/argocd-server -n argocd
+deployment.apps/argocd-server condition met
++ line 26: return
++ line 165: echo
+
++ line 167: echo ==================================================
+==================================================
++ line 168: echo ' Bonus cluster is ready.'
+ Bonus cluster is ready.
++ line 169: echo ' Next: ./deploy.sh'
+ Next: ./deploy.sh
++ line 170: echo ==================================================
+==================================================

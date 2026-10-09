@@ -1,0 +1,342 @@
++ line 3: set -euo pipefail
++++ line 5: dirname ./scripts/deploy.sh
+++ line 5: cd ./scripts
+++ line 5: pwd
++ line 5: SCRIPT_DIR=/home/kali/Desktop/Inception-of-Things-/bonus/scripts
+++ line 6: cd /home/kali/Desktop/Inception-of-Things-/bonus/scripts/../..
+++ line 6: pwd
++ line 6: ROOT_DIR=/home/kali/Desktop/Inception-of-Things-
++ line 7: WORK_DIR=/tmp/iot-gitlab-repo
++ line 9: CLUSTER_NAME=iot
++ line 10: CLUSTER_CONTEXT=k3d-iot
++ line 11: GITLAB_PASSWORD=iotgitlab
++ line 12: GITLAB_IMAGE=gitlab/gitlab-ce:9.5.10-ce.0
++ line 13: PLAYGROUND_IMAGES=("docker.io/wil42/playground:v1" "docker.io/wil42/playground:v2")
++ line 14: GIT_BRANCH=iot
++ line 15: ALLOW_UNPROTECTED_PUSH=1
++ line 16: GITLAB_LOCAL_PORT=8081
++ line 17: GITLAB_LOCAL_URL=http://127.0.0.1:8081
++ line 18: PORT_FORWARD_PID=
++ line 20: [[ 1000 -eq 0 ]]
++ line 31: trap cleanup EXIT
++ line 204: prepare_cluster
++ line 43: echo '==> Checking the k3d cluster context'
+==> Checking the k3d cluster context
++ line 45: command -v k3d
++ line 45: k3d cluster list
++ line 45: grep -qw iot
++ line 46: k3d cluster start iot
++ line 47: k3d kubeconfig merge iot --kubeconfig-switch-context
++ line 48: fix_kubeconfig_server
++ line 34: local server
+++ line 36: kubectl config view -o 'jsonpath={.clusters[?(@.name=="k3d-iot")].cluster.server}'
++ line 36: server=https://127.0.0.1:6550
++ line 37: [[ https://127.0.0.1:6550 == https://0.0.0.0:* ]]
++ line 51: kubectl cluster-info
++ line 205: preload_gitlab_image
++ line 59: echo '==> Preloading GitLab image'
+==> Preloading GitLab image
++ line 60: docker image inspect gitlab/gitlab-ce:9.5.10-ce.0
++ line 60: docker pull gitlab/gitlab-ce:9.5.10-ce.0
+9.5.10-ce.0: Pulling from gitlab/gitlab-ce
+c59d01a7e4ca: Pulling fs layer
+777aae423368: Pulling fs layer
+3abd0825343f: Pulling fs layer
+80b921aca869: Pulling fs layer
+b188b6b017a6: Pulling fs layer
+3d966f757d1b: Pulling fs layer
+fff55ffb28f6: Pulling fs layer
+f1bbfd495cc1: Pulling fs layer
+ae79f2514705: Pulling fs layer
+0c346f7223e2: Pulling fs layer
+41ba73a9054d: Pulling fs layer
+777aae423368: Download complete
+b188b6b017a6: Download complete
+c59d01a7e4ca: Download complete
+41ba73a9054d: Download complete
+f1bbfd495cc1: Download complete
+0c346f7223e2: Download complete
+3abd0825343f: Download complete
+fff55ffb28f6: Download complete
+3d966f757d1b: Download complete
+ae79f2514705: Download complete
+c59d01a7e4ca: Pull complete
+41ba73a9054d: Pull complete
+f1bbfd495cc1: Pull complete
+ae79f2514705: Pull complete
+0c346f7223e2: Pull complete
+777aae423368: Pull complete
+b188b6b017a6: Pull complete
+fff55ffb28f6: Pull complete
+3d966f757d1b: Pull complete
+3abd0825343f: Pull complete
+80b921aca869: Download complete
+80b921aca869: Pull complete
+Digest: sha256:2056d834afe128c9ccac89c6f1af81d36cde2ef3d500319abcf0e5caad4143cc
+Status: Downloaded newer image for gitlab/gitlab-ce:9.5.10-ce.0
+docker.io/gitlab/gitlab-ce:9.5.10-ce.0
++ line 61: image_is_in_cluster gitlab/gitlab-ce:9.5.10-ce.0
++ line 83: local image=gitlab/gitlab-ce:9.5.10-ce.0
++ line 84: local repo=gitlab/gitlab-ce
++ line 85: local tag=9.5.10-ce.0
++ line 87: docker exec k3d-iot-server-0 crictl images
++ line 88: awk -v repo=gitlab/gitlab-ce -v tag=9.5.10-ce.0 $'\n      NR > 1 && ($1 == repo || $1 == "docker.io/" repo) && $2 == tag { found = 1 }\n      END { exit found ? 0 : 1 }\n    '
++ line 62: k3d image import gitlab/gitlab-ce:9.5.10-ce.0 -c iot
+[36mINFO[0m[0000] Importing image(s) into cluster 'iot'        
+[36mINFO[0m[0000] Starting new tools node...                   
+[36mINFO[0m[0000] Starting node 'k3d-iot-tools'                
+[36mINFO[0m[0000] Saving 1 image(s) from runtime...            
+[36mINFO[0m[0006] Importing images into nodes...               
+[36mINFO[0m[0006] Importing images from tarball '/k3d/images/k3d-iot-images-20260710182837.tar' into node 'k3d-iot-server-0'... 
+[36mINFO[0m[0024] Removing the tarball(s) from image volume... 
+[36mINFO[0m[0025] Removing k3d-tools node...                   
+[36mINFO[0m[0027] Successfully imported image(s)               
+[36mINFO[0m[0027] Successfully imported 1 image(s) into 1 cluster(s) 
++ line 206: preload_playground_images
++ line 67: echo '==> Preloading playground app images'
+==> Preloading playground app images
++ line 69: local image
++ line 70: local short_image
++ line 71: for image in "${PLAYGROUND_IMAGES[@]}"
++ line 72: docker image inspect docker.io/wil42/playground:v1
++ line 72: docker pull docker.io/wil42/playground:v1
+v1: Pulling from wil42/playground
+4d9b76c2a3eb: Pulling fs layer
+53955a7f64a2: Pulling fs layer
+386d8a7bffde: Pulling fs layer
+408f87550127: Pulling fs layer
+274b9d9af2b4: Pulling fs layer
+cbdbe7a5bc2a: Pulling fs layer
+b6ca3f8b37fd: Pulling fs layer
+fe522b08c979: Pulling fs layer
+fe522b08c979: Download complete
+386d8a7bffde: Download complete
+b6ca3f8b37fd: Download complete
+53955a7f64a2: Download complete
+408f87550127: Download complete
+cbdbe7a5bc2a: Download complete
+4d9b76c2a3eb: Download complete
+408f87550127: Pull complete
+cbdbe7a5bc2a: Pull complete
+fe522b08c979: Pull complete
+274b9d9af2b4: Download complete
+53955a7f64a2: Pull complete
+274b9d9af2b4: Pull complete
+386d8a7bffde: Pull complete
+b6ca3f8b37fd: Pull complete
+4d9b76c2a3eb: Pull complete
+Digest: sha256:7a8d601dc95973332117529363c5e76399ac85167f6ffb01a9d8a2e03b6ae299
+Status: Downloaded newer image for wil42/playground:v1
+docker.io/wil42/playground:v1
++ line 73: image_is_in_cluster docker.io/wil42/playground:v1
++ line 83: local image=docker.io/wil42/playground:v1
++ line 84: local repo=docker.io/wil42/playground
++ line 85: local tag=v1
++ line 87: docker exec k3d-iot-server-0 crictl images
++ line 88: awk -v repo=docker.io/wil42/playground -v tag=v1 $'\n      NR > 1 && ($1 == repo || $1 == "docker.io/" repo) && $2 == tag { found = 1 }\n      END { exit found ? 0 : 1 }\n    '
++ line 74: k3d image import docker.io/wil42/playground:v1 -c iot
+[36mINFO[0m[0000] Importing image(s) into cluster 'iot'        
+[36mINFO[0m[0000] Starting new tools node...                   
+[36mINFO[0m[0000] Starting node 'k3d-iot-tools'                
+[36mINFO[0m[0001] Saving 1 image(s) from runtime...            
+[36mINFO[0m[0003] Importing images into nodes...               
+[36mINFO[0m[0003] Importing images from tarball '/k3d/images/k3d-iot-images-20260710182911.tar' into node 'k3d-iot-server-0'... 
+[36mINFO[0m[0007] Removing the tarball(s) from image volume... 
+[36mINFO[0m[0008] Removing k3d-tools node...                   
+[36mINFO[0m[0009] Successfully imported image(s)               
+[36mINFO[0m[0009] Successfully imported 1 image(s) into 1 cluster(s) 
++ line 76: short_image=wil42/playground:v1
++ line 77: docker exec k3d-iot-server-0 ctr -n k8s.io images tag docker.io/wil42/playground:v1 wil42/playground:v1
++ line 71: for image in "${PLAYGROUND_IMAGES[@]}"
++ line 72: docker image inspect docker.io/wil42/playground:v2
++ line 72: docker pull docker.io/wil42/playground:v2
+v2: Pulling from wil42/playground
+9f54216d9aee: Pulling fs layer
+8bfc1673b4de: Pulling fs layer
+42bebb2b2c29: Pulling fs layer
+42bebb2b2c29: Download complete
+8bfc1673b4de: Download complete
+42bebb2b2c29: Pull complete
+8bfc1673b4de: Pull complete
+9f54216d9aee: Download complete
+9f54216d9aee: Pull complete
+Digest: sha256:0f8be6f0f51fa7129719392fcf464170c432b2bdb539b5b7fd2db9b42f7b7f91
+Status: Downloaded newer image for wil42/playground:v2
+docker.io/wil42/playground:v2
++ line 73: image_is_in_cluster docker.io/wil42/playground:v2
++ line 83: local image=docker.io/wil42/playground:v2
++ line 84: local repo=docker.io/wil42/playground
++ line 85: local tag=v2
++ line 87: docker exec k3d-iot-server-0 crictl images
++ line 88: awk -v repo=docker.io/wil42/playground -v tag=v2 $'\n      NR > 1 && ($1 == repo || $1 == "docker.io/" repo) && $2 == tag { found = 1 }\n      END { exit found ? 0 : 1 }\n    '
++ line 74: k3d image import docker.io/wil42/playground:v2 -c iot
+[36mINFO[0m[0000] Importing image(s) into cluster 'iot'        
+[36mINFO[0m[0000] Starting new tools node...                   
+[36mINFO[0m[0000] Starting node 'k3d-iot-tools'                
+[36mINFO[0m[0000] Saving 1 image(s) from runtime...            
+[36mINFO[0m[0002] Importing images into nodes...               
+[36mINFO[0m[0002] Importing images from tarball '/k3d/images/k3d-iot-images-20260710182922.tar' into node 'k3d-iot-server-0'... 
+[36mINFO[0m[0004] Removing the tarball(s) from image volume... 
+[36mINFO[0m[0005] Removing k3d-tools node...                   
+[36mINFO[0m[0005] Successfully imported image(s)               
+[36mINFO[0m[0005] Successfully imported 1 image(s) into 1 cluster(s) 
++ line 76: short_image=wil42/playground:v2
++ line 77: docker exec k3d-iot-server-0 ctr -n k8s.io images tag docker.io/wil42/playground:v2 wil42/playground:v2
++ line 208: echo '==> Deploying GitLab into the cluster'
+==> Deploying GitLab into the cluster
++ line 209: kubectl apply -f /home/kali/Desktop/Inception-of-Things-/bonus/scripts/../confs/gitlab.yaml
+deployment.apps/gitlab created
+service/gitlab created
++ line 210: kubectl -n gitlab set image deployment/gitlab gitlab=gitlab/gitlab-ce:9.5.10-ce.0
++ line 212: echo '==> Waiting for the GitLab pod'
+==> Waiting for the GitLab pod
++ line 213: kubectl -n gitlab rollout status deployment/gitlab --timeout=1200s
+Waiting for deployment "gitlab" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "gitlab" rollout to finish: 0 of 1 updated replicas are available...
+deployment "gitlab" successfully rolled out
++ line 214: wait_for_gitlab
++ line 99: echo '==> Waiting for GitLab Rails to be ready'
+==> Waiting for GitLab Rails to be ready
++ line 101: local pod
+++ line 102: seq 1 80
++ line 102: for _ in $(seq 1 80)
+++ line 103: gitlab_pod
++ line 103: pod=gitlab-c79999f75-hbp6c
++ line 104: [[ -n gitlab-c79999f75-hbp6c ]]
++ line 105: kubectl -n gitlab exec gitlab-c79999f75-hbp6c -- gitlab-rails runner 'puts '\''ready'\'''
++ line 108: sleep 15
++ line 102: for _ in $(seq 1 80)
+++ line 103: gitlab_pod
++ line 103: pod=gitlab-c79999f75-hbp6c
++ line 104: [[ -n gitlab-c79999f75-hbp6c ]]
++ line 105: kubectl -n gitlab exec gitlab-c79999f75-hbp6c -- gitlab-rails runner 'puts '\''ready'\'''
++ line 108: sleep 15
++ line 102: for _ in $(seq 1 80)
+++ line 103: gitlab_pod
++ line 103: pod=gitlab-c79999f75-hbp6c
++ line 104: [[ -n gitlab-c79999f75-hbp6c ]]
++ line 105: kubectl -n gitlab exec gitlab-c79999f75-hbp6c -- gitlab-rails runner 'puts '\''ready'\'''
++ line 106: return
++ line 215: create_gitlab_project
++ line 120: echo '==> Creating the local GitLab project root/iot'
+==> Creating the local GitLab project root/iot
++ line 122: local pod
+++ line 123: gitlab_pod
+++ line 95: kubectl -n gitlab get pod -l app=gitlab --field-selector=status.phase=Running -o 'jsonpath={.items[0].metadata.name}'
++ line 123: pod=gitlab-c79999f75-hbp6c
++ line 125: kubectl -n gitlab exec gitlab-c79999f75-hbp6c -- env ALLOW_UNPROTECTED_PUSH=1 gitlab-rails runner $'\n    root = User.find_by(username: \'root\')\n    root.password = \'iotgitlab\'\n    root.password_confirmation = \'iotgitlab\'\n    root.save!\n\n    settings = ApplicationSetting.current\n    if settings.default_branch_protection.to_i != 0\n      unless ENV[\'ALLOW_UNPROTECTED_PUSH\'] == \'1\'\n        abort \'GitLab protects the first branch by default. Re-run with ALLOW_UNPROTECTED_PUSH=1 ./scripts/deploy.sh\'\n      end\n      settings.update_attributes!(default_branch_protection: 0)\n    end\n\n    namespace = root.namespace\n    project = Project.where(namespace_id: namespace.id, path: \'iot\').first\n\n    unless project\n      project = Project.create!(\n        name: \'iot\',\n        path: \'iot\',\n        namespace: namespace,\n        creator: root,\n        visibility_level: 20\n      )\n    end\n\n    project.update_attributes!(visibility_level: 20)\n    project.create_repository unless project.repository_exists?\n    puts project.full_path\n  '
+root/iot
++ line 216: start_gitlab_port_forward
++ line 159: echo '==> Opening a temporary GitLab port-forward on localhost:8081'
+==> Opening a temporary GitLab port-forward on localhost:8081
++ line 161: curl -fsS http://127.0.0.1:8081/users/sign_in
++ line 166: PORT_FORWARD_PID=77508
++ line 165: kubectl -n gitlab port-forward svc/gitlab 8081:80
+++ line 168: seq 1 40
++ line 168: for _ in $(seq 1 40)
++ line 169: curl -fsS http://127.0.0.1:8081/users/sign_in
++ line 172: sleep 3
++ line 168: for _ in $(seq 1 40)
++ line 169: curl -fsS http://127.0.0.1:8081/users/sign_in
++ line 170: return
++ line 217: push_app_to_gitlab
++ line 181: echo '==> Pushing p3/app to the local GitLab repository'
+==> Pushing p3/app to the local GitLab repository
++ line 183: rm -rf /tmp/iot-gitlab-repo
++ line 184: git clone http://root:iotgitlab@127.0.0.1:8081/root/iot.git /tmp/iot-gitlab-repo
+Cloning into '/tmp/iot-gitlab-repo'...
+warning: You appear to have cloned an empty repository.
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
++ line 186: mkdir -p /tmp/iot-gitlab-repo/p3
++ line 187: rm -rf /tmp/iot-gitlab-repo/p3/app
++ line 188: cp -R /home/kali/Desktop/Inception-of-Things-/p3/app /tmp/iot-gitlab-repo/p3/app
++ line 190: cd /tmp/iot-gitlab-repo
++ line 191: git checkout -B iot
+Switched to a new branch 'iot'
++ line 192: git config user.email iot@example.local
++ line 193: git config user.name 'IoT Bonus'
++ line 194: git add p3/app
++ line 196: git diff --cached --quiet
++ line 199: git commit -m 'Add playground app'
+[iot (root-commit) 7bb5c9d] Add playground app
+ 2 files changed, 34 insertions(+)
+ create mode 100644 p3/app/deployment.yaml
+ create mode 100644 p3/app/service.yaml
++ line 200: git push origin iot
+To http://127.0.0.1:8081/root/iot.git
+ * [new branch]      iot -> iot
++ line 219: echo '==> Registering the Argo CD application'
+==> Registering the Argo CD application
++ line 220: kubectl apply -f /home/kali/Desktop/Inception-of-Things-/bonus/scripts/../confs/application.yaml
+application.argoproj.io/wil-playground created
++ line 221: kubectl -n dev delete pod -l app=wil-playground --ignore-not-found
++ line 223: echo '==> Waiting for the app in dev'
+==> Waiting for the app in dev
+++ line 224: seq 1 30
++ line 224: for i in $(seq 1 30)
++ line 225: kubectl -n dev get deployment wil-playground
++ line 228: sleep 5
++ line 224: for i in $(seq 1 30)
++ line 225: kubectl -n dev get deployment wil-playground
++ line 226: break
++ line 230: kubectl -n dev rollout status deployment/wil-playground --timeout=300s
+deployment "wil-playground" successfully rolled out
++ line 232: echo
+
++ line 233: kubectl get ns
+NAME              STATUS   AGE
+argocd            Active   4m55s
+default           Active   5m43s
+dev               Active   4m55s
+gitlab            Active   4m55s
+kube-node-lease   Active   5m43s
+kube-public       Active   5m43s
+kube-system       Active   5m43s
++ line 235: echo
+
++ line 236: kubectl get pods -n gitlab
+NAME                     READY   STATUS    RESTARTS   AGE
+gitlab-c79999f75-hbp6c   1/1     Running   0          72s
++ line 238: echo
+
++ line 239: kubectl get pods -n dev
+NAME                              READY   STATUS    RESTARTS   AGE
+wil-playground-7796fcdb67-mhbrv   1/1     Running   0          2s
++ line 241: echo
+
++ line 242: cat
+--------------------------------------------------------------------
+Access Argo CD with:
+  kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+Access GitLab with:
+  kubectl port-forward svc/gitlab -n gitlab 8081:80
+
+GitLab login:
+  user: root
+  password: iotgitlab
+
+This local lab GitLab has default branch protection disabled so the script
+can push the first app branch automatically.
+
+The Argo CD app now reads from:
+  http://gitlab.gitlab.svc.cluster.local/root/iot.git
+
+To demonstrate v2, edit p3/app/deployment.yaml in GitLab and change:
+  docker.io/wil42/playground:v1 -> docker.io/wil42/playground:v2
+--------------------------------------------------------------------
++ line 1: cleanup
++ line 27: [[ -n 77508 ]]
++ line 28: kill 77508
